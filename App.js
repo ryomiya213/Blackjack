@@ -2,7 +2,9 @@
 
 function App() {
   const app = new Game;
-  app.dealt();
+  console.log('ディーラーの1枚目のカード',app.dealt());
+  app.draw();
+  console.log(app.player.hand,app.player.point);
 }
 
 class Game {
@@ -13,11 +15,18 @@ class Game {
   }
 
   dealt() {
-    this.player.hand.push(this.deck.getCard());
-    this.player.hand.push(this.deck.getCard());
-    this.dealer.hand.push(this.deck.getCard());
-    this.dealer.hand.push(this.deck.getCard());
+    this.player.addCard(this.deck.getCard());
+    this.player.addCard(this.deck.getCard());
+    this.dealer.addCard(this.deck.getCard());
+    this.dealer.addCard(this.deck.getCard());
+    return this.dealer.openCard();
   }
+
+  draw() {
+    this.player.addCard(this.deck.getCard());
+  }
+
+
 }
 
 class Deck {
@@ -42,12 +51,31 @@ class Deck {
 class Player {
   constructor() {
     this.hand = [];
+    this.point = 0;
+  }
+
+  addCard(card) {
+    this.hand.push(card);
+    this.point += card[1];
+  }
+
+
+  judge() {
+    //todo
   }
 }
 
 class Dealer {
   constructor() {
     this.hand = [];
+  }
+
+  addCard(card) {
+    this.hand.push(card);
+  }
+
+  openCard() {
+    return this.hand[0];
   }
 }
 
