@@ -1,10 +1,21 @@
 'use strict';
 
 function App() {
-  const app = new Game;
-  console.log('ディーラーの1枚目のカード',app.dealt());
-  app.draw();
-  console.log(app.player.hand,app.player.point);
+  const game = new Game;
+
+  const startElement = document.querySelector('#start');
+  const dealerElement = document.querySelector('#dealer');
+  const playerElement = document.querySelector('#player');
+  const infoElement = document.querySelector('#info');
+  const hitElement = document.querySelector('#hit');
+  const standElement = document.querySelector('#stand');
+
+  startElement.addEventListener(('click'), () => {
+    console.log('s')
+    game.dealt();
+    dealerElement.innerHTML = `ディーラー：${game.dealer.hand}点数${game.dealer.point}`;
+    playerElement.innerHTML = `プレイヤー：${game.player.hand}点数${game.player.point}`;
+  });
 }
 
 class Game {
@@ -19,11 +30,17 @@ class Game {
     this.player.addCard(this.deck.getCard());
     this.dealer.addCard(this.deck.getCard());
     this.dealer.addCard(this.deck.getCard());
-    return this.dealer.openCard();
   }
 
-  draw() {
+  hit() {
     this.player.addCard(this.deck.getCard());
+  }
+
+  stand() {
+    while (this.dealer.point < 17) {
+      this.dealer.addCard(this.deck.getCard());
+    }
+
   }
 
 
@@ -59,19 +76,17 @@ class Player {
     this.point += card[1];
   }
 
-
-  judge() {
-    //todo
-  }
 }
 
 class Dealer {
   constructor() {
     this.hand = [];
+    this.point = 0;
   }
 
   addCard(card) {
     this.hand.push(card);
+    this.point += card[1];
   }
 
   openCard() {
