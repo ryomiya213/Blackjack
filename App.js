@@ -10,16 +10,43 @@ function App() {
   const hitElement = document.querySelector('#hit');
   const standElement = document.querySelector('#stand');
 
+  let playerTurn = false;
+
   startElement.addEventListener(('click'), () => {
-    console.log('s')
+    game.start();
     game.dealt();
-    dealerElement.innerHTML = `ディーラー：${game.dealer.hand}点数${game.dealer.point}`;
-    playerElement.innerHTML = `プレイヤー：${game.player.hand}点数${game.player.point}`;
+    dealerElement.innerHTML = `ディーラー：1枚目のカード${game.dealer.openCard()}`;
+    playerElement.innerHTML = `プレイヤー：${game.player.hand}得点${game.player.point}`;
+    infoElement.innerHTML = `貴方の現在の得点は${game.player.point}です。<br>ヒットかスタンドを選んでください。`
+    playerTurn = true;
   });
+
+  hitElement.addEventListener(('click'), () => {
+    if (playerTurn) {
+      game.hit();
+      playerElement.innerHTML = `プレイヤー：${game.player.hand}得点${game.player.point}`;
+      infoElement.innerHTML = `貴方の現在の得点は${game.player.point}です。<br>ヒットかスタンドを選んでください。`
+      if (game.player.point > 21) {
+        infoElement.innerHTML = 'プレイヤーの負け';
+        playerTurn = false;
+      }
+    }
+  });
+
+  standElement.addEventListener(('click'), () => {
+    if (playerTurn) {
+      game.stand();
+      dealerElement.innerHTML = `ディーラー：${game.dealer.hand}得点${game.dealer.point}`;
+      infoElement.innerHTML = game.judgeDealerTurn();
+      playerTurn = false;
+    }
+  })
+
+
 }
 
 class Game {
-  constructor() {
+  start() {
     this.deck = new Deck;
     this.player = new Player;
     this.dealer = new Dealer;
@@ -40,9 +67,21 @@ class Game {
     while (this.dealer.point < 17) {
       this.dealer.addCard(this.deck.getCard());
     }
-
   }
 
+  judgeDealerTurn() {
+    if (this.dealer.point > 21) {
+      return 'プレイヤーの勝ち';
+    }
+
+    if (this.player.point > this.dealer.point) {
+      return 'プレイヤーの勝ち';
+    } else if (this.player.point < this.dealer.point) {
+      return 'プレイヤーの負け';
+    } else {
+      return '引き分け';
+    }
+  }
 
 }
 
