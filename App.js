@@ -15,8 +15,8 @@ function App() {
   startElement.addEventListener(('click'), () => {
     game.start();
     game.dealt();
-    dealerElement.innerHTML = `ディーラー：1枚目のカード${game.dealer.openCard()}`;
-    playerElement.innerHTML = `プレイヤー：${game.player.hand}得点${game.player.point}`;
+    dealerElement.innerHTML = `ディーラー ${game.dealer.point}点：1枚目のカード${game.dealer.openCard()}`;
+    playerElement.innerHTML = `プレイヤー ${game.player.point}点：${game.player.allHand()}`;
     infoElement.innerHTML = `貴方の現在の得点は${game.player.point}です。<br>ヒットかスタンドを選んでください。`
     playerTurn = true;
   });
@@ -24,7 +24,7 @@ function App() {
   hitElement.addEventListener(('click'), () => {
     if (playerTurn) {
       game.hit();
-      playerElement.innerHTML = `プレイヤー：${game.player.hand}得点${game.player.point}`;
+      playerElement.innerHTML = `プレイヤー：${game.player.allHand()}得点${game.player.point}`;
       infoElement.innerHTML = `貴方の現在の得点は${game.player.point}です。<br>ヒットかスタンドを選んでください。`
       if (game.player.point > 21) {
         infoElement.innerHTML = 'プレイヤーの負け';
@@ -36,12 +36,11 @@ function App() {
   standElement.addEventListener(('click'), () => {
     if (playerTurn) {
       game.stand();
-      dealerElement.innerHTML = `ディーラー：${game.dealer.hand}得点${game.dealer.point}`;
+      dealerElement.innerHTML = `ディーラー ${game.dealer.point}点：${game.dealer.allHand()}`;
       infoElement.innerHTML = game.judgeDealerTurn();
       playerTurn = false;
     }
-  })
-
+  });
 
 }
 
@@ -91,7 +90,8 @@ class Deck {
     const suit = ['S','C','D','H'];
     for (let i = 1; i <= 13; i++) {
       suit.forEach(suit => {
-        this.cards.push([suit, i]);
+        const card = new Card(suit, i);
+        this.cards.push(card);
       })
     }
   }
@@ -104,6 +104,33 @@ class Deck {
   }
 }
 
+class Card {
+  constructor(suit, number) {
+    this._cardValue = [suit, number];
+  }
+
+  get cardValue() {
+    return this.replaceSuit(this._cardValue);
+  }
+
+  set cardValue(card) {
+    this._cardValue = card;
+  }
+
+  cardPoint() {
+    return this._cardValue[1];
+  }
+
+  replaceSuit(card) {
+    const suit = card[0]
+                .replace('C', '\u{2663}')
+                .replace('D', '\u{2662}')
+                .replace('H', '\u{2661}')
+                .replace('S', '\u{2660}');
+    return suit + card[1];
+  }
+}
+
 class Player {
   constructor() {
     this.hand = [];
@@ -112,7 +139,15 @@ class Player {
 
   addCard(card) {
     this.hand.push(card);
-    this.point += card[1];
+    this.point += card.cardPoint();
+  }
+
+  allHand() {
+    let allString = '';
+    this.hand.forEach(card => {
+      allString += card.cardValue;
+    });
+    return allString;
   }
 
 }
@@ -125,11 +160,19 @@ class Dealer {
 
   addCard(card) {
     this.hand.push(card);
-    this.point += card[1];
+    this.point += card.cardPoint();
+  }
+
+  allHand() {
+    let allString = '';
+    this.hand.forEach(card => {
+      allString += card.cardValue;
+    });
+    return allString;
   }
 
   openCard() {
-    return this.hand[0];
+    return this.hand[0].cardValue;
   }
 }
 
