@@ -15,7 +15,7 @@ function App() {
   startElement.addEventListener(('click'), () => {
     game.start();
     game.dealt();
-    dealerElement.innerHTML = `ディーラー ${game.dealer.point}点：1枚目のカード${game.dealer.openCard()}`;
+    dealerElement.innerHTML = `ディーラー ${game.dealer.point}点：${game.dealer.openCard()} (1枚目のカード)`;
     playerElement.innerHTML = `プレイヤー ${game.player.point}点：${game.player.allHand()}`;
     infoElement.innerHTML = `貴方の現在の得点は${game.player.point}です。<br>ヒットかスタンドを選んでください。`
     playerTurn = true;
@@ -110,7 +110,7 @@ class Card {
   }
 
   get cardValue() {
-    return this.replaceSuit(this._cardValue);
+    return this.replaceSuitNumber(this._cardValue);
   }
 
   set cardValue(card) {
@@ -118,16 +118,28 @@ class Card {
   }
 
   cardPoint() {
-    return this._cardValue[1];
+    let point = 0;
+    if (this._cardValue[1] > 10) {
+      point = 10;
+    } else {
+      point = this._cardValue[1];
+    }
+    return point;
   }
 
-  replaceSuit(card) {
+  replaceSuitNumber(card) {
     const suit = card[0]
                 .replace('C', '\u{2663}')
                 .replace('D', '\u{2662}')
                 .replace('H', '\u{2661}')
                 .replace('S', '\u{2660}');
-    return suit + card[1];
+    card[1] = card[1].toString();
+    const number = card[1]
+                  .replace(/^1$/, 'A')
+                  .replace('11', 'J')
+                  .replace('12', 'Q')
+                  .replace('13', 'K');
+    return suit + number;
   }
 }
 
