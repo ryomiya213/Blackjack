@@ -15,18 +15,18 @@ function App() {
   startElement.addEventListener(('click'), () => {
     game.start();
     game.dealt();
-    dealerElement.innerHTML = `ディーラー ${game.dealer.point}点：${game.dealer.openCard()} (1枚目のカード)`;
-    playerElement.innerHTML = `プレイヤー ${game.player.point}点：${game.player.allHand()}`;
-    infoElement.innerHTML = `貴方の現在の得点は${game.player.point}です。<br>ヒットかスタンドを選んでください。`
+    dealerElement.innerHTML = `ディーラー ${game.dealer.getPoint()}点：${game.dealer.openCard()} (1枚目のカード)`;
+    playerElement.innerHTML = `プレイヤー ${game.player.getPoint()}点：${game.player.allHand()}`;
+    infoElement.innerHTML = `貴方の現在の得点は${game.player.getPoint()}です。<br>ヒットかスタンドを選んでください。`
     playerTurn = true;
   });
 
   hitElement.addEventListener(('click'), () => {
     if (playerTurn) {
       game.hit();
-      playerElement.innerHTML = `プレイヤー：${game.player.allHand()}得点${game.player.point}`;
-      infoElement.innerHTML = `貴方の現在の得点は${game.player.point}です。<br>ヒットかスタンドを選んでください。`
-      if (game.player.point > 21) {
+      playerElement.innerHTML = `プレイヤー ${game.player.getPoint()}点：${game.player.allHand()}`;
+      infoElement.innerHTML = `貴方の現在の得点は${game.player.getPoint()}です。<br>ヒットかスタンドを選んでください。`
+      if (game.player.getPoint() > 21) {
         infoElement.innerHTML = 'プレイヤーの負け';
         playerTurn = false;
       }
@@ -36,7 +36,7 @@ function App() {
   standElement.addEventListener(('click'), () => {
     if (playerTurn) {
       game.stand();
-      dealerElement.innerHTML = `ディーラー ${game.dealer.point}点：${game.dealer.allHand()}`;
+      dealerElement.innerHTML = `ディーラー ${game.dealer.getPoint()}点：${game.dealer.allHand()}`;
       infoElement.innerHTML = game.judgeDealerTurn();
       playerTurn = false;
     }
@@ -63,19 +63,19 @@ class Game {
   }
 
   stand() {
-    while (this.dealer.point < 17) {
+    while (this.dealer.getPoint() < 17) {
       this.dealer.addCard(this.deck.getCard());
     }
   }
 
   judgeDealerTurn() {
-    if (this.dealer.point > 21) {
+    if (this.dealer.getPoint() > 21) {
       return 'プレイヤーの勝ち';
     }
 
-    if (this.player.point > this.dealer.point) {
+    if (this.player.getPoint() > this.dealer.getPoint()) {
       return 'プレイヤーの勝ち';
-    } else if (this.player.point < this.dealer.point) {
+    } else if (this.player.getPoint() < this.dealer.getPoint()) {
       return 'プレイヤーの負け';
     } else {
       return '引き分け';
@@ -127,6 +127,11 @@ class Card {
     return point;
   }
 
+  /**
+   * 配列で格納されているカードを文字列に整形する
+   * @param {Array} card 例:['C',1]
+   * @return {string} 例:♠A
+   */
   replaceSuitNumber(card) {
     const suit = card[0]
                 .replace('C', '\u{2663}')
@@ -143,7 +148,7 @@ class Card {
   }
 }
 
-class Player {
+class PlayerBase {
   constructor() {
     this.hand = [];
     this.point = 0;
@@ -161,28 +166,17 @@ class Player {
     });
     return allString;
   }
+
+  getPoint() {
+    return this.point;
+  }
+}
+
+class Player extends PlayerBase {
 
 }
 
-class Dealer {
-  constructor() {
-    this.hand = [];
-    this.point = 0;
-  }
-
-  addCard(card) {
-    this.hand.push(card);
-    this.point += card.cardPoint();
-  }
-
-  allHand() {
-    let allString = '';
-    this.hand.forEach(card => {
-      allString += card.cardValue;
-    });
-    return allString;
-  }
-
+class Dealer extends PlayerBase{
   openCard() {
     return this.hand[0].cardValue;
   }
