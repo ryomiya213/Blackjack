@@ -15,17 +15,17 @@ function App() {
   startElement.addEventListener(('click'), () => {
     game.start();
     game.dealt();
-    dealerElement.innerHTML = `ディーラー ${game.dealer.getPoint()}点：${game.dealer.openCard()} (1枚目のカード)`;
-    playerElement.innerHTML = `プレイヤー ${game.player.getPoint()}点：${game.player.allHand()}`;
-    infoElement.innerHTML = `貴方の現在の得点は${game.player.getPoint()}です。<br>ヒットかスタンドを選んでください。`
+    dealerElement.innerHTML = game.dealer.openCard();
+    playerElement.innerHTML = `プレイヤー ${game.player.getTextPoint()}：${game.player.allHand()}`;
+    infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。<br>ヒットかスタンドを選んでください。`
     playerTurn = true;
   });
 
   hitElement.addEventListener(('click'), () => {
     if (playerTurn) {
       game.hit();
-      playerElement.innerHTML = `プレイヤー ${game.player.getPoint()}点：${game.player.allHand()}`;
-      infoElement.innerHTML = `貴方の現在の得点は${game.player.getPoint()}です。<br>ヒットかスタンドを選んでください。`
+      playerElement.innerHTML = `プレイヤー ${game.player.getTextPoint()}：${game.player.allHand()}`;
+      infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。<br>ヒットかスタンドを選んでください。`
       if (game.player.getPoint() > 21) {
         infoElement.innerHTML = 'プレイヤーの負け';
         playerTurn = false;
@@ -36,7 +36,7 @@ function App() {
   standElement.addEventListener(('click'), () => {
     if (playerTurn) {
       game.stand();
-      dealerElement.innerHTML = `ディーラー ${game.dealer.getPoint()}点：${game.dealer.allHand()}`;
+      dealerElement.innerHTML = `ディーラー ${game.dealer.getPoint()}：${game.dealer.allHand()}`;
       infoElement.innerHTML = game.judgeDealerTurn();
       playerTurn = false;
     }
@@ -152,11 +152,17 @@ class PlayerBase {
   constructor() {
     this.hand = [];
     this.point = 0;
+    this.includeAcePoint = 0;
   }
 
   addCard(card) {
     this.hand.push(card);
     this.point += card.cardPoint();
+    if (card.cardPoint() === 1) {
+      this.includeAcePoint += 11
+    } else {
+      this.includeAcePoint += card.cardPoint();
+    }
   }
 
   allHand() {
@@ -165,6 +171,16 @@ class PlayerBase {
       allString += card.cardValue;
     });
     return allString;
+  }
+
+  getTextPoint() {
+    let pointText = '';
+    if (this.point === this.includeAcePoint) {
+      pointText = `${this.point}点`
+    } else {
+      pointText = `${this.includeAcePoint}点 ${this.point}点`
+    }
+    return pointText;
   }
 
   getPoint() {
@@ -178,7 +194,13 @@ class Player extends PlayerBase {
 
 class Dealer extends PlayerBase{
   openCard() {
-    return this.hand[0].cardValue;
+    let point = 0
+    if (this.hand[0].cardPoint() === 1) {
+      point = 11;
+    } else {
+      point = this.hand[0].cardPoint();
+    }
+    return `ディーラー${point}点：${this.hand[0].cardValue} (1枚目のカード)`;
   }
 }
 
