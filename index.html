@@ -8,7 +8,11 @@
   </head>
   <body>
     <h1>ブラックジャック</h1>
-    <button id="start">スタート</button>
+    <form id="bet-form">
+      <input type="submit" id="start" value="スタート"></input>
+      <p id="player-money">軍資金：$1000</p>
+      <p>掛け金：<input type="number" id="bet-money-value" min="5" max="500" value="5"></p>
+    </form>
     <p id="dealer">ディーラー：</p>
     <p id="player">プレイヤー：</p>
     <p id="info">説明</p>

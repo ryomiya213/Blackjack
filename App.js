@@ -3,21 +3,31 @@
 function App() {
   const game = new Game;
 
+  const betFormElement = document.querySelector('#bet-form');
   const startElement = document.querySelector('#start');
+  const betMoneyElement = document.querySelector('#bet-money-value');
   const dealerElement = document.querySelector('#dealer');
   const playerElement = document.querySelector('#player');
+  const playerMoneyElement = document.querySelector('#player-money')
   const infoElement = document.querySelector('#info');
   const hitElement = document.querySelector('#hit');
   const standElement = document.querySelector('#stand');
 
+  let gameStart = false;
   let playerTurn = false;
 
-  startElement.addEventListener(('click'), () => {
-    game.start();
-    game.dealt();
+  betFormElement.addEventListener(('submit'), (event) => {
+    event.preventDefault();
+    const betMoney = Number(betMoneyElement.value);
+    if (!gameStart){
+      game.start();
+      gameStart = true;
+    }
+    game.dealt(betMoney);
     dealerElement.innerHTML = game.dealer.openCard();
     playerElement.innerHTML = `プレイヤー ${game.player.getTextPoint()}：${game.player.allHand()}`;
     infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。<br>ヒットかスタンドを選んでください。`
+    
     playerTurn = true;
   });
 
@@ -27,7 +37,8 @@ function App() {
       playerElement.innerHTML = `プレイヤー ${game.player.getTextPoint()}：${game.player.allHand()}`;
       infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。<br>ヒットかスタンドを選んでください。`
       if (game.player.getPoint() > 21) {
-        infoElement.innerHTML = 'プレイヤーの負け';
+        infoElement.innerHTML = game.judgeDealerTurn();
+        playerMoneyElement.innerHTML = `軍資金：$${game.player.myMoney.myMoney}`
         playerTurn = false;
       }
     }
@@ -38,6 +49,7 @@ function App() {
       game.stand();
       dealerElement.innerHTML = `ディーラー ${game.dealer.getTextPoint()}：${game.dealer.allHand()}`;
       infoElement.innerHTML = game.judgeDealerTurn();
+      playerMoneyElement.innerHTML = `軍資金：$${game.player.myMoney.myMoney}`;
       playerTurn = false;
     }
   });
@@ -46,12 +58,14 @@ function App() {
 
 class Game {
   start() {
-    this.deck = new Deck;
-    this.player = new Player;
+    this.player = new Player(1000);
     this.dealer = new Dealer;
   }
 
-  dealt() {
+  dealt(betMoney) {
+    this.deck = new Deck;
+    this.resetHand();
+    this.player.myMoney.bet(betMoney);
     this.player.addCard(this.deck.getCard());
     this.player.addCard(this.deck.getCard());
     this.dealer.addCard(this.deck.getCard());
@@ -70,17 +84,27 @@ class Game {
   }
 
   judgeDealerTurn() {
-    if (this.dealer.getPoint() > 21) {
-      return 'プレイヤーの勝ち';
+    switch (true) {
+      case (this.player.getPoint() > 21):
+        this.player.myMoney.minusMoney();
+        return 'プレイヤーの負け';
+      case (this.dealer.getPoint() > 21):
+        this.player.myMoney.plusMoney();
+        return 'プレイヤーの勝ち';
+      case (this.player.getPoint() > this.dealer.getPoint()):
+        this.player.myMoney.plusMoney();
+        return 'プレイヤーの勝ち';
+      case (this.player.getPoint() < this.dealer.getPoint()):
+        this.player.myMoney.minusMoney();
+        return 'プレイヤーの負け';
+      default:
+        return '引き分け';
     }
+  }
 
-    if (this.player.getPoint() > this.dealer.getPoint()) {
-      return 'プレイヤーの勝ち';
-    } else if (this.player.getPoint() < this.dealer.getPoint()) {
-      return 'プレイヤーの負け';
-    } else {
-      return '引き分け';
-    }
+  resetHand() {
+    this.player.resetHand();
+    this.dealer.resetHand();
   }
 
 }
@@ -149,6 +173,25 @@ class Card {
   }
 }
 
+class Money {
+  constructor(money) {
+    this.myMoney = money;
+    this.betMoney = 0;
+  }
+
+  plusMoney() {
+    this.myMoney += this.betMoney;
+  }
+
+  minusMoney() {
+    this.myMoney -= this.betMoney;
+  }
+
+  bet(money) {
+    this.betMoney = money;
+  }
+}
+
 class PlayerBase {
   constructor() {
     this.hand = [];
@@ -191,10 +234,19 @@ class PlayerBase {
       return this.point;
     }
   }
+
+  resetHand() {
+    this.hand = [];
+    this.point = 0;
+    this.includeAcePoint = 0;
+  }
 }
 
 class Player extends PlayerBase {
-
+  constructor(money) {
+    super();
+    this.myMoney = new Money(money);
+  }
 }
 
 class Dealer extends PlayerBase{
