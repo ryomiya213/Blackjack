@@ -36,7 +36,7 @@ function App() {
   standElement.addEventListener(('click'), () => {
     if (playerTurn) {
       game.stand();
-      dealerElement.innerHTML = `ディーラー ${game.dealer.getPoint()}：${game.dealer.allHand()}`;
+      dealerElement.innerHTML = `ディーラー ${game.dealer.getTextPoint()}：${game.dealer.allHand()}`;
       infoElement.innerHTML = game.judgeDealerTurn();
       playerTurn = false;
     }
@@ -63,7 +63,8 @@ class Game {
   }
 
   stand() {
-    while (this.dealer.getPoint() < 17) {
+    // ソフト17はヒット
+    while (this.dealt.point < 17 || this.dealer.includeAcePoint <= 17) {
       this.dealer.addCard(this.deck.getCard());
     }
   }
@@ -175,7 +176,7 @@ class PlayerBase {
 
   getTextPoint() {
     let pointText = '';
-    if (this.point === this.includeAcePoint) {
+    if (this.point === this.includeAcePoint || this.includeAcePoint > 21) {
       pointText = `${this.point}点`
     } else {
       pointText = `${this.includeAcePoint}点 ${this.point}点`
@@ -184,7 +185,11 @@ class PlayerBase {
   }
 
   getPoint() {
-    return this.point;
+    if (this.includeAcePoint <= 21) {
+      return this.includeAcePoint;
+    } else {
+      return this.point;
+    }
   }
 }
 
