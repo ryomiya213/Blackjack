@@ -4,7 +4,6 @@ function App() {
   const game = new Game;
 
   const betFormElement = document.querySelector('#bet-form');
-  const startElement = document.querySelector('#start');
   const betMoneyElement = document.querySelector('#bet-money-value');
   const dealerElement = document.querySelector('#dealer');
   const playerElement = document.querySelector('#player');
@@ -19,16 +18,20 @@ function App() {
   betFormElement.addEventListener(('submit'), (event) => {
     event.preventDefault();
     const betMoney = Number(betMoneyElement.value);
-    if (!gameStart){
-      game.start();
-      gameStart = true;
-    }
-    game.dealt(betMoney);
-    dealerElement.innerHTML = game.dealer.openCard();
-    playerElement.innerHTML = `プレイヤー ${game.player.getTextPoint()}：${game.player.allHand()}`;
-    infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。<br>ヒットかスタンドを選んでください。`
-    
-    playerTurn = true;
+    if (5 <= betMoney && betMoney <= 100) {
+      if (!gameStart){
+        game.start();
+        gameStart = true;
+      }
+      game.dealt(betMoney);
+      dealerElement.innerHTML = game.dealer.openCard();
+      playerElement.innerHTML = `プレイヤー ${game.player.getTextPoint()}：${game.player.allHand()}`;
+      infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。<br>ヒットかスタンドを選んでください。`
+      
+      playerTurn = true;
+  } else {
+    infoElement.innerHTML = '1回あたりの掛け金は$5から$100までです。'
+  }
   });
 
   hitElement.addEventListener(('click'), () => {
@@ -57,6 +60,10 @@ function App() {
 }
 
 class Game {
+  /**
+   * PlayerとDealerを初期化
+   * Playerの軍資金はリセットされる
+   */
   start() {
     this.player = new Player(1000);
     this.dealer = new Dealer;
@@ -76,8 +83,10 @@ class Game {
     this.player.addCard(this.deck.getCard());
   }
 
+  /**
+   * ソフト17はヒット
+   */
   stand() {
-    // ソフト17はヒット
     while (this.dealt.point < 17 || this.dealer.includeAcePoint <= 17) {
       this.dealer.addCard(this.deck.getCard());
     }
@@ -201,12 +210,13 @@ class PlayerBase {
 
   addCard(card) {
     this.hand.push(card);
-    this.point += card.cardPoint();
-    if (card.cardPoint() === 1) {
+    // 引いたカードがA && 今まで引いたカードにAが含まれていない
+    if (card.cardPoint() === 1 && this.includeAcePoint === this.point) {
       this.includeAcePoint += 11
     } else {
       this.includeAcePoint += card.cardPoint();
     }
+    this.point += card.cardPoint();
   }
 
   allHand() {
@@ -241,6 +251,7 @@ class PlayerBase {
     this.includeAcePoint = 0;
   }
 }
+
 
 class Player extends PlayerBase {
   constructor(money) {
