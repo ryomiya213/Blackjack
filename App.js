@@ -30,7 +30,7 @@ function App() {
       
       playerTurn = true;
   } else {
-    infoElement.innerHTML = '1回あたりの掛け金は$5から$100までです。'
+    infoElement.innerHTML = '1回あたりの賭け金は$5から$100までです。'
   }
   });
 
@@ -69,6 +69,10 @@ class Game {
     this.dealer = new Dealer;
   }
 
+  /**
+   * ゲーム開始時にPlayerとDealerがそれぞれカードを2枚引いて、手札に加える
+   * @param {Number} betMoney 賭ける金額
+   */
   dealt(betMoney) {
     this.deck = new Deck;
     this.resetHand();
@@ -79,11 +83,15 @@ class Game {
     this.dealer.addCard(this.deck.getCard());
   }
 
+  /**
+   * Playerがカードを1枚引く
+   */
   hit() {
     this.player.addCard(this.deck.getCard());
   }
 
   /**
+   * Dealerが17点以上になるまでカードを引く
    * ソフト17はヒット
    */
   stand() {
@@ -92,6 +100,10 @@ class Game {
     }
   }
 
+  /**
+   * PlayerとDealerのポイントを比較して結果を表示する
+   * @return {String} 結果を文字列で返す
+   */
   judgeDealerTurn() {
     switch (true) {
       case (this.player.getPoint() > 21):
@@ -111,6 +123,9 @@ class Game {
     }
   }
 
+  /**
+   * PlayerとDealerの手札とポイントをリセットする
+   */
   resetHand() {
     this.player.resetHand();
     this.dealer.resetHand();
@@ -130,6 +145,9 @@ class Deck {
     }
   }
 
+  /**
+   * カードをランダムに引く
+   */
   getCard() {
     const randomNumber = Math.floor(this.cards.length * Math.random());
     const card = this.cards[randomNumber];
@@ -139,6 +157,11 @@ class Deck {
 }
 
 class Card {
+  /**
+   * カードのスートと数字を配列で保存し、文字出力できるようにする
+   * @param {String} suit スート
+   * @param {Number} number 数字
+   */
   constructor(suit, number) {
     this._cardValue = [suit, number];
   }
@@ -151,6 +174,10 @@ class Card {
     this._cardValue = card;
   }
 
+  /**
+   * カードの点数を返す
+   * @return {Number} カードの点数(Aは1点として扱う)
+   */
   cardPoint() {
     let point = 0;
     if (this._cardValue[1] > 10) {
@@ -183,8 +210,12 @@ class Card {
 }
 
 class Money {
-  constructor(money) {
-    this.myMoney = money;
+  /**
+   * 軍資金と賭け金の管理をする
+   * @param {Number} myMoney 最初に持っている軍資金
+   */
+  constructor(myMoney) {
+    this.myMoney = myMoney;
     this.betMoney = 0;
   }
 
@@ -196,6 +227,10 @@ class Money {
     this.myMoney -= this.betMoney;
   }
 
+  /**
+   * 賭ける金額を保持する
+   * @param {Number} money 賭け金
+   */
   bet(money) {
     this.betMoney = money;
   }
@@ -219,6 +254,10 @@ class PlayerBase {
     this.point += card.cardPoint();
   }
 
+  /**
+   * 手札を文字列で出力
+   * @return {String} 手札一覧
+   */
   allHand() {
     let allString = '';
     this.hand.forEach(card => {
@@ -227,6 +266,10 @@ class PlayerBase {
     return allString;
   }
 
+  /**
+   * 現在の点数を返す
+   * @return {String} 現在の点数。 Aを含み2パターンある場合は両方出力
+   */
   getTextPoint() {
     let pointText = '';
     if (this.point === this.includeAcePoint || this.includeAcePoint > 21) {
@@ -237,6 +280,10 @@ class PlayerBase {
     return pointText;
   }
 
+  /**
+   * 手札で21点に一番近い点数を返す
+   * @return {Number} 現在の点数。 Aも考慮
+   */
   getPoint() {
     if (this.includeAcePoint <= 21) {
       return this.includeAcePoint;
@@ -261,6 +308,10 @@ class Player extends PlayerBase {
 }
 
 class Dealer extends PlayerBase{
+  /**
+   * Dealerが2枚配られた手札のうち1枚を公開する
+   * @retun {String} Dealerの手札を1枚公開
+   */
   openCard() {
     let point = 0
     if (this.hand[0].cardPoint() === 1) {
