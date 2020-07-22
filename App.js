@@ -11,6 +11,7 @@ function App() {
   const infoElement = document.querySelector('#info');
   const hitElement = document.querySelector('#hit');
   const standElement = document.querySelector('#stand');
+  const DoubleDownElement = document.querySelector('#Double-Down');
 
   let gameStart = false;
   let playerTurn = false;
@@ -57,6 +58,16 @@ function App() {
     }
   });
 
+  DoubleDownElement.addEventListener('click', () => {
+    if (playerTurn) {
+      game.doubleDown();
+      dealerElement.innerHTML = `ディーラー ${game.dealer.getTextPoint()}：${game.dealer.allHand()}`;
+      infoElement.innerHTML = `ダブルダウン ${game.judgeDealerTurn()}`
+      playerMoneyElement.innerHTML = `軍資金：$${game.player.myMoney.myMoney}`;
+      playerTurn = false;
+    }
+  });
+
 }
 
 class Game {
@@ -98,6 +109,12 @@ class Game {
     while (this.dealt.point < 17 || this.dealer.includeAcePoint <= 17) {
       this.dealer.addCard(this.deck.getCard());
     }
+  }
+
+  doubleDown() {
+    this.player.myMoney.betDobuleDown();
+    this.hit();
+    this.stand();
   }
 
   /**
@@ -225,6 +242,10 @@ class Money {
 
   minusMoney() {
     this.myMoney -= this.betMoney;
+  }
+
+  betDobuleDown() {
+    this.betMoney = this.betMoney * 2;
   }
 
   /**
