@@ -9,13 +9,14 @@ function App() {
   const playerElement = document.querySelector('#player');
   const playerMoneyElement = document.querySelector('#player-money')
   const infoElement = document.querySelector('#info');
+  const startElement = document.querySelector('#start');
   const hitElement = document.querySelector('#hit');
   const standElement = document.querySelector('#stand');
   const DoubleDownElement = document.querySelector('#Double-Down');
 
   let gameStart = false;
   let playerTurn = false;
-
+  console.log(typeof standElement);
   betFormElement.addEventListener(('submit'), (event) => {
     event.preventDefault();
     const betMoney = Number(betMoneyElement.value);
@@ -28,7 +29,8 @@ function App() {
       dealerElement.innerHTML = game.dealer.openCard();
       playerElement.innerHTML = `プレイヤー ${game.player.getTextPoint()}：${game.player.allHand()}`;
       infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。<br>ヒットかスタンドを選んでください。`
-      
+      enableButton(hitElement, standElement, DoubleDownElement);
+      disableButton(startElement);
       playerTurn = true;
   } else {
     infoElement.innerHTML = '1回あたりの賭け金は$5から$100までです。'
@@ -39,10 +41,12 @@ function App() {
     if (playerTurn) {
       game.hit();
       playerElement.innerHTML = `プレイヤー ${game.player.getTextPoint()}：${game.player.allHand()}`;
-      infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。<br>ヒットかスタンドを選んでください。`
+      infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。`
+      disableButton(DoubleDownElement);
       if (game.player.getPoint() > 21) {
         infoElement.innerHTML = game.judgeDealerTurn();
         playerMoneyElement.innerHTML = `軍資金：$${game.player.myMoney.myMoney}`
+        enableNextGameButton();
         playerTurn = false;
       }
     }
@@ -54,6 +58,7 @@ function App() {
       dealerElement.innerHTML = `ディーラー ${game.dealer.getTextPoint()}：${game.dealer.allHand()}`;
       infoElement.innerHTML = game.judgeDealerTurn();
       playerMoneyElement.innerHTML = `軍資金：$${game.player.myMoney.myMoney}`;
+      enableNextGameButton();
       playerTurn = false;
     }
   });
@@ -61,13 +66,42 @@ function App() {
   DoubleDownElement.addEventListener('click', () => {
     if (playerTurn) {
       game.doubleDown();
+      playerElement.innerHTML = `プレイヤー ${game.player.getTextPoint()}：${game.player.allHand()}`;
       dealerElement.innerHTML = `ディーラー ${game.dealer.getTextPoint()}：${game.dealer.allHand()}`;
       infoElement.innerHTML = `ダブルダウン ${game.judgeDealerTurn()}`
       playerMoneyElement.innerHTML = `軍資金：$${game.player.myMoney.myMoney}`;
+      enableNextGameButton();
       playerTurn = false;
     }
   });
 
+  /**
+   * buttonタグのdiabledを削除してボタンを活性化する
+   * @param  {...HTMLElement} elements 
+   */
+  function enableButton(...elements) {
+    elements.forEach(element => {
+      element.removeAttribute('disabled');
+    });
+  }
+
+  /**
+   * buttonタグのdiabledを追加してボタンを非活性化する
+   * @param  {...HTMLElement} elements 
+   */
+  function disableButton(...elements) {
+    elements.forEach(element => {
+      element.setAttribute('disabled', true);
+    })
+  }
+
+  /**
+   * 各種プレーボタンを非活性化して次のゲームへ
+   */
+  function enableNextGameButton() {
+    enableButton(startElement);
+    disableButton(hitElement, standElement, DoubleDownElement);
+  }
 }
 
 class Game {
