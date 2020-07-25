@@ -16,7 +16,7 @@ function App() {
 
   let gameStart = false;
   let playerTurn = false;
-  console.log(typeof standElement);
+
   betFormElement.addEventListener(('submit'), (event) => {
     event.preventDefault();
     const betMoney = Number(betMoneyElement.value);
@@ -24,14 +24,30 @@ function App() {
       if (!gameStart){
         game.start();
         gameStart = true;
+        startElement.setAttribute('value', '次のゲームへ');
       }
       game.dealt(betMoney);
-      dealerElement.innerHTML = game.dealer.openCard();
+      // ブラックジャック
       updatePlayerElement();
-      infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。`
-      enableButton(hitElement, standElement, DoubleDownElement);
-      disableButton(startElement, betMoneyElement);
-      playerTurn = true;
+      if (game.player.getPoint() === 21) {
+        if (game.dealer.getPoint() === 21) {
+          infoElement.innerHTML = `引き分け`
+        } else {
+          infoElement.innerHTML = `ブラックジャック！賭け金の1.5倍払い戻しします`
+          game.player.myMoney.blackjack();
+        }
+        updateDealerElement();
+        updatePlayerMoneyElement();
+        enableNextGameButton();
+        playerTurn = false;
+      // 通常の動作
+      } else {
+        dealerElement.innerHTML = game.dealer.openCard();
+        infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。`
+        enableButton(hitElement, standElement, DoubleDownElement);
+        disableButton(startElement, betMoneyElement);
+        playerTurn = true;
+      }
   } else {
     infoElement.innerHTML = '1回あたりの賭け金は$5から$100までです。'
   }
@@ -298,6 +314,10 @@ class Money {
 
   minusMoney() {
     this.myMoney -= this.betMoney;
+  }
+
+  blackjack() {
+    this.myMoney += this.betMoney * 3 / 2;
   }
 
   betDobuleDown() {
