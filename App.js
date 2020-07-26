@@ -13,6 +13,15 @@ function App() {
   const hitElement = document.querySelector('#hit');
   const standElement = document.querySelector('#stand');
   const DoubleDownElement = document.querySelector('#Double-Down');
+  const splitElement = document.querySelector('#split');
+
+  const splitBlockElement = document.querySelector('#split-block');
+  const splitPlayerElement = document.querySelector('#split-player');
+  const splitInfoElement = document.querySelector('#split-info');
+  const splitHitElement = document.querySelector('#split-hit');
+  const splitStandElement = document.querySelector('#split-stand');
+  const splitDoubleDownElement = document.querySelector('#split-Double-Down');
+
 
   let gameStart = false;
   let playerTurn = false;
@@ -43,20 +52,20 @@ function App() {
       // 通常の動作
       } else {
         dealerElement.innerHTML = game.dealer.openCard();
-        infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。`
+        infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。`;
         enableButton(hitElement, standElement, DoubleDownElement);
         disableButton(startElement, betMoneyElement);
         playerTurn = true;
       }
   } else {
-    infoElement.innerHTML = '1回あたりの賭け金は$5から$100までです。'
+    infoElement.innerHTML = '1回あたりの賭け金は$5から$100までです。';
   }
   });
 
   hitElement.addEventListener(('click'), () => {
     if (playerTurn) {
       game.hit();
-      infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。`
+      infoElement.innerHTML = `貴方の現在の得点は${game.player.getTextPoint()}です。`;
       disableButton(DoubleDownElement);
       if (game.player.getPoint() > 21) {
         infoElement.innerHTML = game.judgeDealerTurn();
@@ -89,6 +98,13 @@ function App() {
       updatePlayerMoneyElement();
       enableNextGameButton();
       playerTurn = false;
+    }
+  });
+
+  splitElement.addEventListener('click', () => {
+    if (playerTurn) {
+      splitBlockElement.classList.remove('display-none');
+      enableButton(splitHitElement, splitStandElement, splitDoubleDownElement);
     }
   });
 
