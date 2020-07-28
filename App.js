@@ -13,15 +13,6 @@ function App() {
   const hitElement = document.querySelector('#hit');
   const standElement = document.querySelector('#stand');
   const DoubleDownElement = document.querySelector('#Double-Down');
-  const splitElement = document.querySelector('#split');
-
-  const splitBlockElement = document.querySelector('#split-block');
-  const splitPlayerElement = document.querySelector('#split-player');
-  const splitInfoElement = document.querySelector('#split-info');
-  const splitHitElement = document.querySelector('#split-hit');
-  const splitStandElement = document.querySelector('#split-stand');
-  const splitDoubleDownElement = document.querySelector('#split-Double-Down');
-
 
   let gameStart = false;
   let playerTurn = false;
